@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Tilde
+GenericName=Markdown and LaTeX editor
+Comment=Edit and preview your Markdown and LaTeX documents
+Exec=tilde %U
+Terminal=false
+Categories=Qt;KDE;Utility;TextEditor;
+Icon=accessories-text-editor
+MimeType=text/markdown;text/x-tex;
