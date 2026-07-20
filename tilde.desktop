@@ -1,10 +1,18 @@
 [Desktop Entry]
-Type=Application
-Name=Tilde
-GenericName=Markdown and LaTeX editor
+Categories=Qt;KDE;Utility;TextEditor;
+Comment[en_US]=Edit and preview your Markdown and LaTeX documents
 Comment=Edit and preview your Markdown and LaTeX documents
 Exec=tilde %U
+GenericName[en_US]=Markdown and LaTeX editor
+GenericName=Markdown and LaTeX editor
+Icon=tilde
+MimeType=text/x-tex;text/markdown;
+Name[en_US]=Tilde
+Name=Tilde
+Path=
+StartupNotify=true
 Terminal=false
-Categories=Qt;KDE;Utility;TextEditor;
-Icon=accessories-text-editor
-MimeType=text/markdown;text/x-tex;
+TerminalOptions=
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-Username=

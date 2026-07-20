@@ -43,6 +43,7 @@ void MainWindow::refreshPreview() {
 MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
     // Window setup
     setWindowTitle("Tilde");
+    setWindowIcon(QIcon::fromTheme("tilde", QIcon("res/tilde.svg")));
     QScreen* screen = QGuiApplication::primaryScreen();
     QRect screenRes = screen -> availableGeometry();
     resize(screenRes.width() * 0.8, screenRes.height()* 0.8);
