@@ -1,25 +1,24 @@
 #include <QApplication>
+#include <QFileInfo>
 #include <iostream>
 #include "mainwindow.hpp"
+
 int main(int argc, char **argv) {
     QApplication app(argc, argv);
     MainWindow window;
 
-
-
-    if(app.arguments().size() > 1 ) {
+    if (app.arguments().size() > 1) {
         QString filePath = app.arguments().at(1);
-        if(filePath.endsWith(".md") || filePath.endsWith(".tex")) {
+        QString suffix = QFileInfo(filePath).suffix().toLower();
+        if (suffix == "md" || suffix == "tex") {
             window.openFile(filePath);
-            window.show();
-            return app.exec();
-        }
-        else {
-            std::cout << "error: invalid file mimetype";
+        } else {
+            std::cerr << "error: unsupported file extension '" << filePath.toStdString() << "'\n";
+            return 1;
         }
     }
-    else {
-        window.show();
-        return app.exec();
-    }
+
+    window.show();
+    return app.exec();
 }
+
