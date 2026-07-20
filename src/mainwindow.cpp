@@ -3,20 +3,42 @@
 #include <ktexteditor/view.h>
 #include <QSplitter>
 #include <QScreen>
-#include <QFontDatabase>
 #include <QMenuBar>
 #include <QFileDialog>
 #include <KActionCollection>
 #include <QIcon>
 #include <QPrinter>
 #include <QTextDocument>
+#include <QStackedWidget>
+#include <QPdfView>
+#include <QPdfDocument>
+#include <QProcess>
+#include <QTimer>
+#include <QFile>
+#include <ktexteditor/document.h>
+#include <QTextBrowser>
+#include <QKeySequence>
+
 
 void MainWindow::openFile(const QString &filePath) {
     if(!filePath.isEmpty()) {
         codeDocument -> openUrl(QUrl::fromLocalFile(filePath));
         setWindowTitle("Tilde - " + QFileInfo(filePath).fileName());
+        refreshPreview();
     }
 }
+
+void MainWindow::refreshPreview() {
+    QString filePath = codeDocument->url().toLocalFile();
+    if (QFileInfo(filePath).suffix().toLower() == "tex") {
+        previewStack->setCurrentWidget(pdfPreview);
+        latexTimer->start(500);
+    } else {
+        previewStack->setCurrentWidget(previewScene);
+        previewScene->setMarkdown(codeDocument->text());
+    }
+}
+
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
     // Window setup
@@ -28,7 +50,30 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
     // Core objects
     codeDocument = KTextEditor::Editor::instance() -> createDocument(this);
     codeView = codeDocument -> createView(this);
+    for (QAction* act : codeView->actionCollection()->actions()) {
+        if (act->shortcut() == QKeySequence::New ||
+            act->shortcut() == QKeySequence::Open ||
+            act->shortcut() == QKeySequence::Save ||
+            act->shortcut() == QKeySequence::SaveAs ||
+            act->shortcut() == QKeySequence("Ctrl+E") ||
+            act->shortcut() == QKeySequence("Ctrl+P") ||
+            act->shortcut() == QKeySequence::Print) {
+            act->setShortcut(QKeySequence());
+        }
+    }
     previewScene = new QTextBrowser(this);
+    pdfDocument = new QPdfDocument(this);
+    pdfPreview = new QPdfView(this);
+    pdfPreview -> setDocument(pdfDocument);
+    pdfPreview -> setPageMode(QPdfView::PageMode::MultiPage);
+
+    previewStack = new QStackedWidget(this);
+    previewStack -> addWidget(previewScene);
+    previewStack -> addWidget(pdfPreview);
+
+    latexTimer = new QTimer(this);
+    latexTimer -> setSingleShot(true);
+    latexProcess = new QProcess(this);
 
     // Layout
     codeView -> setConfigValue("scrollbar-minimap", false);
@@ -42,7 +87,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
 
     mainScene = new QSplitter(Qt::Horizontal, this);
     mainScene -> addWidget(codeView);
-    mainScene -> addWidget(previewScene);
+    mainScene -> addWidget(previewStack);
     mainScene -> setSizes({500, 500});
 
     this->setCentralWidget(mainScene);
@@ -52,26 +97,39 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
     QMenu* editMenuBar = menuBar() -> addMenu("Edit");
     QMenu* viewMenuBar = menuBar() -> addMenu("View");
 
+    QAction* newFileMenuItem = fileMenuBar -> addAction("New");
+    newFileMenuItem->setIcon(QIcon::fromTheme("document-new"));
+    newFileMenuItem->setShortcut(QKeySequence::New);
     QAction* openFileMenuItem = fileMenuBar -> addAction("Open...");
     openFileMenuItem -> setIcon(QIcon::fromTheme("document-open"));
+    openFileMenuItem->setShortcut(QKeySequence::Open);
     QAction* saveFileMenuItem = fileMenuBar -> addAction("Save");
     saveFileMenuItem -> setIcon(QIcon::fromTheme("document-save"));
+    saveFileMenuItem->setShortcut(QKeySequence::Save);
     QAction* saveAsFileMenuItem = fileMenuBar -> addAction("Save as...");
     saveAsFileMenuItem -> setIcon(QIcon::fromTheme("document-save-as"));
+    saveAsFileMenuItem->setShortcut(QKeySequence::SaveAs);
     fileMenuBar -> addSeparator();
     QAction* exportPdfFileMenuItem = fileMenuBar -> addAction("Export as PDF...");
     exportPdfFileMenuItem -> setIcon(QIcon::fromTheme("document-export"));
+    exportPdfFileMenuItem->setShortcut(QKeySequence("Ctrl+E"));
     fileMenuBar -> addSeparator();
     QAction* quitFileMenuItem = fileMenuBar -> addAction("Quit");
     quitFileMenuItem -> setIcon(QIcon::fromTheme("application-exit"));
+    quitFileMenuItem->setShortcut(QKeySequence::Quit);
 
     QAction* togglePreviewViewMenuItem = viewMenuBar -> addAction("Show Live Preview");
     togglePreviewViewMenuItem->setCheckable(true);
     togglePreviewViewMenuItem->setChecked(true);
     togglePreviewViewMenuItem -> setIcon(QIcon::fromTheme("view-preview"));
+    togglePreviewViewMenuItem->setShortcut(QKeySequence("Ctrl+P"));
 
 
-
+    connect(newFileMenuItem, &QAction::triggered, this, [this]() {
+        codeDocument->closeUrl();
+        setWindowTitle("Tilde - Untitled");
+        refreshPreview();
+    });
     connect(quitFileMenuItem, &QAction::triggered, this, [this](){close();});
     connect(openFileMenuItem, &QAction::triggered, this, [this]() {
         QString filePath = QFileDialog::getOpenFileName(this, "Open File", QDir::homePath(), "Markdown and Latex files (*.md *.tex)");
@@ -94,16 +152,27 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
     });
 
     connect(togglePreviewViewMenuItem, &QAction::triggered, this, [this](bool check) {
-        previewScene -> setVisible(check);
+        previewStack -> setVisible(check);
     });
 
     connect(exportPdfFileMenuItem, &QAction::triggered, this, [this]() {
         QString filePath = QFileDialog::getSaveFileName(this, "Save Exported file", QDir::homePath(), "PDF Document (*.pdf)");
         if (!filePath.isEmpty()) {
-            QPrinter printer(QPrinter::HighResolution);
-            printer.setOutputFormat(QPrinter::PdfFormat);
-            printer.setOutputFileName(filePath);
-            previewScene->document()->print(&printer);
+            QString activeFile = codeDocument->url().toLocalFile();
+            if (QFileInfo(activeFile).suffix().toLower() == "tex") {
+                QString baseName = QFileInfo(activeFile).baseName();
+                QString compiledPdf = QDir::tempPath() + "/" + baseName + ".pdf";
+
+                if (QFile::exists(filePath)) {
+                    QFile::remove(filePath);
+                }
+                QFile::copy(compiledPdf, filePath);
+            } else {
+                QPrinter printer(QPrinter::HighResolution);
+                printer.setOutputFormat(QPrinter::PdfFormat);
+                printer.setOutputFileName(filePath);
+                previewScene->document()->print(&printer);
+            }
         }
     });
 
@@ -131,8 +200,31 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
     viewMenuBar -> addAction(codeView->actionCollection() -> action("view_reset_font_sizes"));
 
     // Connect Document and Preview
+    connect(latexTimer, &QTimer::timeout, this, [this](){
+        QString filePath = codeDocument->url().toLocalFile();
+        if(!filePath.isEmpty()) {
+            if (latexProcess -> state() != QProcess::NotRunning) {
+                latexProcess -> kill();
+                latexProcess -> waitForFinished(100);
+            }
+            latexProcess -> start("/usr/bin/pdflatex", {
+               "-interaction=nonstopmode",
+               "-output-directory=" + QDir::tempPath(),
+                filePath
+            });
+        }
+    });
+
+    connect(latexProcess, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus status) {
+        if (status == QProcess::NormalExit && !codeDocument->url().isEmpty()) {
+            QString name = QFileInfo(codeDocument->url().toLocalFile()).baseName();
+            QString compiledPdf = QDir::tempPath() + "/" + name + ".pdf";
+            pdfDocument->load(compiledPdf);
+        }
+    });
+
     connect(codeDocument, &KTextEditor::Document::textChanged, this, [this]() {
-        previewScene->setMarkdown(codeDocument->text());
+        refreshPreview();
     });
 
 };

@@ -7,11 +7,11 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets PrintSupport Pdf PdfWidgets)
 find_package(KF6TextEditor REQUIRED)
 
 qt_add_executable(tilde
     src/main.cpp
     src/mainwindow.cpp
 )
-target_link_libraries(tilde PRIVATE Qt6::Widgets KF6::TextEditor)
+target_link_libraries(tilde PRIVATE Qt6::Widgets Qt6::PrintSupport Qt6::Pdf Qt6::PdfWidgets KF6::TextEditor)

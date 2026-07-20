@@ -1,11 +1,13 @@
 #pragma once
 #include <QMainWindow>
-#include <ktexteditor/document.h>
-#include <QTextBrowser>
-
 
 class QSplitter;
 class QTextBrowser;
+class QStackedWidget;
+class QPdfView;
+class QPdfDocument;
+class QProcess;
+class QTimer;
 namespace KTextEditor {
     class Document;
     class View;
@@ -17,9 +19,15 @@ public:
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
     void openFile(const QString &filePath);
+    void refreshPreview();
 private:
     KTextEditor::Document* codeDocument = nullptr;
     KTextEditor::View* codeView = nullptr;
     QTextBrowser* previewScene = nullptr;
     QSplitter* mainScene = nullptr;
+    QStackedWidget* previewStack = nullptr;
+    QPdfView* pdfPreview = nullptr;
+    QPdfDocument* pdfDocument = nullptr;
+    QProcess* latexProcess = nullptr;
+    QTimer* latexTimer = nullptr;
 };
