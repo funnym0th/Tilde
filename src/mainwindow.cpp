@@ -9,11 +9,35 @@
 #include <format>
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
+    // Window setup
     setWindowTitle("Tilde");
+    QScreen* screen = QGuiApplication::primaryScreen();
+    QRect screenRes = screen -> availableGeometry();
+    resize(screenRes.width() * 0.8, screenRes.height()* 0.8);
+
+    // Core objects
     codeDocument = KTextEditor::Editor::instance() -> createDocument(this);
     codeView = codeDocument -> createView(this);
     previewScene = new QTextBrowser(this);
 
+    // Layout
+    codeView -> setConfigValue("scrollbar-minimap", false);
+    codeView -> setConfigValue("dynamic-word-wrap", false);
+    codeView -> setStatusBarEnabled(false);
+    codeView -> setMinimumWidth(this -> width() * 0.2);
+    codeView->setStyleSheet("QScrollBar:vertical { width: 0px; }"
+    "QScrollBar:horizontal { height: 0px; }");
+
+    previewScene -> setMaximumWidth(this -> width() * 0.8);
+
+    mainScene = new QSplitter(Qt::Horizontal, this);
+    mainScene -> addWidget(codeView);
+    mainScene -> addWidget(previewScene);
+    mainScene -> setSizes({500, 500});
+
+    this->setCentralWidget(mainScene);
+
+    // Menu bar and actions
     QMenu* fileMenuBar = menuBar() -> addMenu("File");
     QMenu* editMenuBar = menuBar() -> addMenu("Edit");
     QMenu* viewMenuBar = menuBar() -> addMenu("View");
@@ -54,32 +78,11 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
         }
     });
 
-    QScreen* screen = QGuiApplication::primaryScreen();
-    QRect screenRes = screen -> availableGeometry();
-
-    QFont monoFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-
-    resize(screenRes.width() * 0.8, screenRes.height()* 0.8);
-
+    // Connect Document and Preview
     connect(codeDocument, &KTextEditor::Document::textChanged, this, [this]() {
         previewScene->setMarkdown(codeDocument->text());
     });
 
-    codeView -> setConfigValue("scrollbar-minimap", false);
-    codeView -> setConfigValue("dynamic-word-wrap", false);
-    codeView -> setStatusBarEnabled(false);
-    codeView -> setMinimumWidth(this -> width() * 0.2);
-    codeView->setStyleSheet("QScrollBar:vertical { width: 0px; }"
-                            "QScrollBar:horizontal { height: 0px; }");
-
-    previewScene -> setMaximumWidth(this -> width() * 0.8);
-
-    mainScene = new QSplitter(Qt::Horizontal, this);
-    mainScene -> addWidget(codeView);
-    mainScene -> addWidget(previewScene);
-    mainScene -> setSizes({500, 500});
-
-    this->setCentralWidget(mainScene);
 };
 
 MainWindow::~MainWindow() {}
