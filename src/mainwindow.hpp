@@ -10,6 +10,7 @@ class MainWindow : public QMainWindow {
 public:
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
+    void openFile(const QString &filePath);
 private:
     KTextEditor::Document* codeDocument = nullptr;
     KTextEditor::View* codeView = nullptr;

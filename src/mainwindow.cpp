@@ -8,6 +8,13 @@
 #include <QFileDialog>
 #include <format>
 
+void MainWindow::openFile(const QString &filePath) {
+    if(!filePath.isEmpty()) {
+    codeDocument -> openUrl(QUrl::fromLocalFile(filePath));
+    setWindowTitle("Tilde - " + filePath);
+    }
+}
+
 MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
     // Window setup
     setWindowTitle("Tilde");
