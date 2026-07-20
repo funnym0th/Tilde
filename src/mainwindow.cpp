@@ -7,6 +7,7 @@
 #include <QMenuBar>
 #include <QFileDialog>
 #include <format>
+#include <KActionCollection>
 
 void MainWindow::openFile(const QString &filePath) {
     if(!filePath.isEmpty()) {
@@ -55,13 +56,16 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
     fileMenuBar -> addSeparator();
     QAction* quitAppMenuItem = fileMenuBar -> addAction("Quit");
 
+    QAction* togglePreviewViewMenuItem = viewMenuBar -> addAction("Show Live Preview");
+    togglePreviewViewMenuItem->setCheckable(true);
+    togglePreviewViewMenuItem->setChecked(true);
+
+
+
     connect(quitAppMenuItem, &QAction::triggered, this, [this](){close();});
     connect(openFileMenuItem, &QAction::triggered, this, [this]() {
         QString filePath = QFileDialog::getOpenFileName(this, "Open File", QDir::homePath(), "Markdown and Latex files (*.md *.tex)");
-        if(!filePath.isEmpty()) {
-            codeDocument -> openUrl(QUrl::fromLocalFile(filePath));
-             setWindowTitle("Tilde - " + filePath);
-        }
+        openFile(filePath);
     });
     connect(saveAsFileMenuItem, &QAction::triggered, this, [this]() {
         QString filePath = QFileDialog::getSaveFileName(this, "Save File", QDir::homePath(), "Markdown (*.md);;Latex (*.tex)");
@@ -71,13 +75,34 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
         }
     });
     connect(saveFileMenuItem, &QAction::triggered, this, [this, saveAsFileMenuItem]() {
-        if (!codeDocument->url().isEmpty()) {
+        if (!codeDocument -> url().isEmpty()) {
             codeDocument -> save();
         }
         else {
             saveAsFileMenuItem->trigger();
         }
     });
+
+    connect(togglePreviewViewMenuItem, &QAction::triggered, this, [this](bool check) {
+        previewScene -> setVisible(check);
+    });
+
+    editMenuBar -> addAction(codeView->actionCollection() -> action("edit_undo"));
+    editMenuBar -> addAction(codeView->actionCollection() -> action("edit_redo"));
+    editMenuBar -> addSeparator();
+    editMenuBar -> addAction(codeView->actionCollection() -> action("edit_cut"));
+    editMenuBar -> addAction(codeView->actionCollection() -> action("edit_copy"));
+    editMenuBar -> addAction(codeView->actionCollection() -> action("edit_paste"));
+    editMenuBar -> addSeparator();
+    editMenuBar -> addAction(codeView->actionCollection() -> action("edit_select_all"));
+
+    viewMenuBar -> addSeparator();
+    viewMenuBar -> addAction(codeView->actionCollection() -> action("view_line_numbers"));
+    viewMenuBar -> addAction(codeView->actionCollection() -> action("view_dynamic_word_wrap"));
+    viewMenuBar -> addSeparator();
+    viewMenuBar -> addAction(codeView->actionCollection() -> action("view_inc_font_sizes"));
+    viewMenuBar -> addAction(codeView->actionCollection() -> action("view_dec_font_sizes"));
+    viewMenuBar -> addAction(codeView->actionCollection() -> action("view_reset_font_sizes"));
 
     // Connect Document and Preview
     connect(codeDocument, &KTextEditor::Document::textChanged, this, [this]() {
