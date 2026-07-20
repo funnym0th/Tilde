@@ -1,7 +1,14 @@
 cmake_minimum_required(VERSION 3.10)
+project(tilde LANGUAGES CXX)
 
-project(tilde)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
 
-add_executable(tilde main.cpp)
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(KF6TextEditor REQUIRED)
 
-install(TARGETS tilde RUNTIME DESTINATION bin)
+qt_add_executable(tilde main.cpp MainWindow.cpp)
+target_link_libraries(tilde PRIVATE Qt6::Widgets KF6::TextEditor)

@@ -1,0 +1,17 @@
+build/
+build-*/
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+Makefile
+*.cmake
+*.o
+*.a
+*.so
+tilde
+*.kate-swp
+*.swp
+*~
+.kdev4/
+*.kdev4
+.kdev_include_paths
