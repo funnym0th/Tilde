@@ -4,5 +4,6 @@
 * [TODO] LSP support
 * [TODO] find and replace functions
 * [TODO] fast export to pdf for both markdown and latex code
+* [TODO] support file opening through command line arguments
 
 Please note it's a work in progress (if this text makes it after I set the repo to public I will feel ashamed of myself)
