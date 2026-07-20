@@ -25,7 +25,7 @@
      inkscape:deskcolor="#505050"
      inkscape:document-units="px"
      inkscape:zoom="0.96328693"
-     inkscape:cx="266.2758"
+     inkscape:cx="373.20137"
      inkscape:cy="262.12335"
      inkscape:window-width="1280"
      inkscape:window-height="800"
@@ -36,14 +36,26 @@
   <defs
      id="defs1">
     <linearGradient
+       id="linearGradient3"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:#ffdf80;stop-opacity:1;"
+         offset="0"
+         id="stop3" />
+      <stop
+         style="stop-color:#ffe297;stop-opacity:1;"
+         offset="1"
+         id="stop4" />
+    </linearGradient>
+    <linearGradient
        id="linearGradient1"
        inkscape:collect="always">
       <stop
-         style="stop-color:#ffca80;stop-opacity:1;"
+         style="stop-color:#ffdf80;stop-opacity:1;"
          offset="0"
          id="stop1" />
       <stop
-         style="stop-color:#ffd097;stop-opacity:1;"
+         style="stop-color:#ffe297;stop-opacity:1;"
          offset="1"
          id="stop2" />
     </linearGradient>
@@ -90,13 +102,22 @@
        x2="456"
        y2="256"
        gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3"
+       id="linearGradient4"
+       x1="56.000137"
+       y1="256"
+       x2="455.99986"
+       y2="256"
+       gradientUnits="userSpaceOnUse" />
   </defs>
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="fill:#ffdcaa;stroke:#ffccaa;stroke-opacity:1;fill-opacity:1"
+       style="fill:#ffeaaa;stroke:#ffeaaa;stroke-opacity:1;fill-opacity:1"
        id="rect1"
        width="512"
        height="512"
@@ -104,7 +125,7 @@
        y="0.5"
        ry="50" />
     <rect
-       style="fill:#ffca80;stroke:#ffb380;stroke-opacity:1;fill-opacity:1"
+       style="fill:#ffdf80;stroke:#ffdf80;stroke-opacity:1;fill-opacity:1"
        id="rect2"
        width="25"
        height="100"
@@ -114,7 +135,7 @@
        ry="8.2827444"
        sodipodi:type="rect" />
     <rect
-       style="fill:#ffca80;stroke:#ffb380;stroke-opacity:1;fill-opacity:1"
+       style="fill:#ffdf80;stroke:#ffdf80;stroke-opacity:1;fill-opacity:1"
        id="rect2-7"
        width="25"
        height="100"
@@ -124,7 +145,7 @@
        ry="8.2827444"
        sodipodi:type="rect" />
     <rect
-       style="fill:#ffca80;stroke:#ffb380;stroke-opacity:1;fill-opacity:1"
+       style="fill:#ffdf80;stroke:#ffdf80;stroke-opacity:1;fill-opacity:1"
        id="rect2-7-0"
        width="25"
        height="100"
@@ -134,7 +155,7 @@
        ry="8.2827444"
        sodipodi:type="rect" />
     <rect
-       style="fill:#ffca80;stroke:#ffb380;stroke-opacity:1;fill-opacity:1"
+       style="fill:#ffdf80;stroke:#ffdf80;stroke-opacity:1;fill-opacity:1"
        id="rect2-7-0-8"
        width="25"
        height="100"
@@ -144,7 +165,7 @@
        ry="8.2827444"
        sodipodi:type="rect" />
     <rect
-       style="fill:url(#linearGradient2);stroke:#ffb380;stroke-width:0.875274;stroke-opacity:1"
+       style="fill:url(#linearGradient2);stroke:url(#linearGradient4);stroke-width:0.875;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
        id="rect1-6"
        width="399.12473"
        height="399.12473"
