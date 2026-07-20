@@ -6,13 +6,12 @@
 #include <QFontDatabase>
 #include <QMenuBar>
 #include <QFileDialog>
-#include <format>
 #include <KActionCollection>
 
 void MainWindow::openFile(const QString &filePath) {
     if(!filePath.isEmpty()) {
-    codeDocument -> openUrl(QUrl::fromLocalFile(filePath));
-    setWindowTitle("Tilde - " + filePath);
+        codeDocument -> openUrl(QUrl::fromLocalFile(filePath));
+        setWindowTitle("Tilde - " + filePath);
     }
 }
 
