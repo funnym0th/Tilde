@@ -11,8 +11,8 @@ public:
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 private:
-    KTextEditor::Document* codeDocument;
-    KTextEditor::View* codeView;
+    KTextEditor::Document* codeDocument = nullptr;
+    KTextEditor::View* codeView = nullptr;
+    QTextBrowser* previewScene = nullptr;
     QSplitter* mainScene;
-    QTextBrowser* previewScene;
 };
