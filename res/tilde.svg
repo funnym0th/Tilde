@@ -8,7 +8,7 @@
    version="1.1"
    id="svg1"
    inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
-   sodipodi:docname="tilde2.svg"
+   sodipodi:docname="tilde.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -25,7 +25,7 @@
      inkscape:deskcolor="#505050"
      inkscape:document-units="px"
      inkscape:zoom="0.96328693"
-     inkscape:cx="265.75675"
+     inkscape:cx="266.2758"
      inkscape:cy="262.12335"
      inkscape:window-width="1280"
      inkscape:window-height="800"
@@ -39,11 +39,11 @@
        id="linearGradient1"
        inkscape:collect="always">
       <stop
-         style="stop-color:#ffb380;stop-opacity:1;"
+         style="stop-color:#ffca80;stop-opacity:1;"
          offset="0"
          id="stop1" />
       <stop
-         style="stop-color:#ffbd97;stop-opacity:1;"
+         style="stop-color:#ffd097;stop-opacity:1;"
          offset="1"
          id="stop2" />
     </linearGradient>
@@ -96,7 +96,7 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="fill:#ffccaa;stroke:#ffccaa;stroke-opacity:1"
+       style="fill:#ffdcaa;stroke:#ffccaa;stroke-opacity:1;fill-opacity:1"
        id="rect1"
        width="512"
        height="512"
@@ -104,7 +104,7 @@
        y="0.5"
        ry="50" />
     <rect
-       style="fill:#ffb380;stroke:#ffb380;stroke-opacity:1"
+       style="fill:#ffca80;stroke:#ffb380;stroke-opacity:1;fill-opacity:1"
        id="rect2"
        width="25"
        height="100"
@@ -114,7 +114,7 @@
        ry="8.2827444"
        sodipodi:type="rect" />
     <rect
-       style="fill:#ffb380;stroke:#ffb380;stroke-opacity:1"
+       style="fill:#ffca80;stroke:#ffb380;stroke-opacity:1;fill-opacity:1"
        id="rect2-7"
        width="25"
        height="100"
@@ -124,7 +124,7 @@
        ry="8.2827444"
        sodipodi:type="rect" />
     <rect
-       style="fill:#ffb380;stroke:#ffb380;stroke-opacity:1;fill-opacity:1"
+       style="fill:#ffca80;stroke:#ffb380;stroke-opacity:1;fill-opacity:1"
        id="rect2-7-0"
        width="25"
        height="100"
@@ -134,7 +134,7 @@
        ry="8.2827444"
        sodipodi:type="rect" />
     <rect
-       style="fill:#ffb380;stroke:#ffb380;stroke-opacity:1"
+       style="fill:#ffca80;stroke:#ffb380;stroke-opacity:1;fill-opacity:1"
        id="rect2-7-0-8"
        width="25"
        height="100"
