@@ -71,6 +71,9 @@ cmake --build build -j$(nproc)
 
 ---
 
+## TODO
+* Add support for Markdown image tags from URLs
+
 ## License
 
 This project is licensed under the **GNU General Public License Version 3 (GPL-3.0)**. 
