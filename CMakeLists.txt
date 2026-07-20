@@ -10,5 +10,8 @@ set(CMAKE_AUTOUIC ON)
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 find_package(KF6TextEditor REQUIRED)
 
-qt_add_executable(tilde main.cpp MainWindow.cpp)
+qt_add_executable(tilde
+    src/main.cpp
+    src/mainwindow.cpp
+)
 target_link_libraries(tilde PRIVATE Qt6::Widgets KF6::TextEditor)

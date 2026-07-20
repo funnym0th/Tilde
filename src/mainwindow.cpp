@@ -1,4 +1,4 @@
-#include "MainWindow.hpp"
+#include "mainwindow.hpp"
 #include <ktexteditor/editor.h>
 #include <ktexteditor/view.h>
 #include <QSplitter>
@@ -21,6 +21,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
     codeView -> setConfigValue("dynamic-word-wrap", false);
     codeView -> setStatusBarEnabled(false);
     codeView -> setMinimumWidth(this -> width() * 0.2);
+    codeView->setStyleSheet("QScrollBar:vertical { width: 0px; }"
+                            "QScrollBar:horizontal { height: 0px; }");
 
     previewScene -> setMaximumWidth(this -> width() * 0.8);
 
