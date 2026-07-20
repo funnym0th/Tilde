@@ -20,9 +20,11 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QDir>
+#include <QTemporaryDir>
 #include <QTextBrowser>
 #include <QKeySequence>
 #include <QCloseEvent>
+
 #include <QMessageBox>
 
 void MainWindow::closeEvent(QCloseEvent *event) {
@@ -38,10 +40,11 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 void MainWindow::openFile(const QString &filePath) {
     if (!filePath.isEmpty()) {
         codeDocument->openUrl(QUrl::fromLocalFile(filePath));
-        setWindowTitle("Tilde - " + QFileInfo(filePath).fileName());
+        updateWindowTitle();
         refreshPreview();
     }
 }
+
 
 bool MainWindow::isLatexMode() const {
     QString filePath = codeDocument->url().toLocalFile();
@@ -50,6 +53,23 @@ bool MainWindow::isLatexMode() const {
     }
     return previewStack->currentWidget() == pdfPreview;
 }
+
+void MainWindow::updateWindowTitle() {
+    QString fileName = codeDocument->url().isEmpty() 
+                       ? "Untitled" 
+                       : QFileInfo(codeDocument->url().toLocalFile()).fileName();
+    QString modifiedMark = codeDocument->isModified() ? "*" : "";
+    setWindowTitle("Tilde - " + fileName + modifiedMark);
+}
+
+QString MainWindow::getTempPath() const {
+    if (tempDir && tempDir->isValid()) {
+        return tempDir->path();
+    }
+    return QDir::tempPath();
+}
+
+
 
 void MainWindow::refreshPreview() {
     if (isLatexMode()) {
@@ -80,7 +100,9 @@ MainWindow::~MainWindow() {
         latexProcess->kill();
         latexProcess->waitForFinished(200);
     }
+    delete tempDir;
 }
+
 
 void MainWindow::setupEditor() {
     codeDocument = KTextEditor::Editor::instance()->createDocument(this);
@@ -127,7 +149,10 @@ void MainWindow::setupPreview() {
     mainScene->setSizes({500, 500});
 
     setCentralWidget(mainScene);
+
+    tempDir = new QTemporaryDir(QDir::tempPath() + "/tilde_XXXXXX");
 }
+
 
 void MainWindow::setupMenuBar() {
     QMenu* fileMenuBar = menuBar()->addMenu("File");
@@ -194,9 +219,10 @@ void MainWindow::setupMenuBar() {
 void MainWindow::setupConnections() {
     connect(newFileAction, &QAction::triggered, this, [this]() {
         codeDocument->closeUrl();
-        setWindowTitle("Tilde - Untitled");
+        updateWindowTitle();
         refreshPreview();
     });
+
 
     connect(quitFileAction, &QAction::triggered, this, [this]() { close(); });
 
@@ -209,10 +235,11 @@ void MainWindow::setupConnections() {
         QString filePath = QFileDialog::getSaveFileName(this, "Save File", QDir::homePath(), "Markdown (*.md);;LaTeX (*.tex)");
         if (!filePath.isEmpty()) {
             codeDocument->saveAs(QUrl::fromLocalFile(filePath));
-            setWindowTitle("Tilde - " + QFileInfo(filePath).fileName());
+            updateWindowTitle();
             refreshPreview();
         }
     });
+
 
     connect(saveFileAction, &QAction::triggered, this, [this]() {
         if (!codeDocument->url().isEmpty()) {
@@ -238,7 +265,7 @@ void MainWindow::setupConnections() {
         if (!filePath.isEmpty()) {
             if (isLatexMode()) {
                 QString baseName = QFileInfo(activeFile).baseName();
-                QString compiledPdf = QDir::tempPath() + "/" + baseName + ".pdf";
+                QString compiledPdf = getTempPath() + "/" + baseName + ".pdf";
                 if (QFile::exists(compiledPdf)) {
                     if (QFile::exists(filePath)) {
                         QFile::remove(filePath);
@@ -263,7 +290,7 @@ void MainWindow::setupConnections() {
             }
             latexProcess->start("pdflatex", {
                 "-interaction=nonstopmode",
-                "-output-directory=" + QDir::tempPath(),
+                "-output-directory=" + getTempPath(),
                 filePath
             });
         }
@@ -272,17 +299,23 @@ void MainWindow::setupConnections() {
     connect(latexProcess, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus status) {
         if (status == QProcess::NormalExit && exitCode == 0 && !codeDocument->url().isEmpty()) {
             QString name = QFileInfo(codeDocument->url().toLocalFile()).baseName();
-            QString compiledPdf = QDir::tempPath() + "/" + name + ".pdf";
+            QString compiledPdf = getTempPath() + "/" + name + ".pdf";
             if (QFile::exists(compiledPdf)) {
                 pdfDocument->load(compiledPdf);
             }
         }
     });
 
+
     connect(codeDocument, &KTextEditor::Document::textChanged, this, [this]() {
         refreshPreview();
     });
+
+    connect(codeDocument, &KTextEditor::Document::modifiedChanged, this, [this]() {
+        updateWindowTitle();
+    });
 }
+
 
 void MainWindow::setupContextMenus() {
     QMenu* editorMenu = new QMenu(codeView);

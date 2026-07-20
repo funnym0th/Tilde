@@ -10,7 +10,9 @@ class QPdfDocument;
 class QProcess;
 class QTimer;
 class QAction;
+class QTemporaryDir;
 namespace KTextEditor {
+
     class Document;
     class View;
 }
@@ -31,8 +33,12 @@ private:
     void setupConnections();
     void setupContextMenus();
     bool isLatexMode() const;
+    void updateWindowTitle();
+    QString getTempPath() const;
 
     KTextEditor::Document* codeDocument = nullptr;
+
+
     KTextEditor::View* codeView = nullptr;
     QTextBrowser* previewScene = nullptr;
     QSplitter* mainScene = nullptr;
@@ -41,8 +47,10 @@ private:
     QPdfDocument* pdfDocument = nullptr;
     QProcess* latexProcess = nullptr;
     QTimer* latexTimer = nullptr;
+    QTemporaryDir* tempDir = nullptr;
 
     QAction* newFileAction = nullptr;
+
     QAction* openFileAction = nullptr;
     QAction* saveFileAction = nullptr;
     QAction* saveAsFileAction = nullptr;
