@@ -48,10 +48,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
     fileMenuBar -> addSeparator();
     QAction* quitAppMenuItem = fileMenuBar -> addAction("Quit");
 
-    // Quit action
     connect(quitAppMenuItem, &QAction::triggered, this, [this](){close();});
-
-    // Open file action
     connect(openFileMenuItem, &QAction::triggered, this, [this]() {
         QString filePath = QFileDialog::getOpenFileName(this, "Open File", QDir::homePath(), "Markdown and Latex files (*.md *.tex)");
         if(!filePath.isEmpty()) {
@@ -59,8 +56,6 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
              setWindowTitle("Tilde - " + filePath);
         }
     });
-
-    // Save as file
     connect(saveAsFileMenuItem, &QAction::triggered, this, [this]() {
         QString filePath = QFileDialog::getSaveFileName(this, "Save File", QDir::homePath(), "Markdown (*.md);;Latex (*.tex)");
         if (!filePath.isEmpty()) {
@@ -68,7 +63,6 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
             setWindowTitle("Tilde - " + filePath);
         }
     });
-
     connect(saveFileMenuItem, &QAction::triggered, this, [this, saveAsFileMenuItem]() {
         if (!codeDocument->url().isEmpty()) {
             codeDocument -> save();
