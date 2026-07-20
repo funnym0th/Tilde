@@ -4,6 +4,7 @@
 #include <QSplitter>
 #include <QScreen>
 #include <QMenuBar>
+#include <QMenu>
 #include <QFileDialog>
 #include <KActionCollection>
 #include <QIcon>
@@ -226,6 +227,70 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
 
     connect(codeDocument, &KTextEditor::Document::textChanged, this, [this]() {
         refreshPreview();
+    });
+
+    // Custom Right-Click Context Menus
+    QMenu* editorMenu = new QMenu(codeView);
+    codeView->setContextMenu(editorMenu);
+    auto populateEditorMenu = [this, exportPdfFileMenuItem, togglePreviewViewMenuItem](QMenu* menu) {
+        if (!menu) return;
+        menu->clear();
+        if (auto act = codeView->actionCollection()->action("edit_undo")) menu->addAction(act);
+        if (auto act = codeView->actionCollection()->action("edit_redo")) menu->addAction(act);
+        menu->addSeparator();
+        if (auto act = codeView->actionCollection()->action("edit_cut")) menu->addAction(act);
+        if (auto act = codeView->actionCollection()->action("edit_copy")) menu->addAction(act);
+        if (auto act = codeView->actionCollection()->action("edit_paste")) menu->addAction(act);
+        menu->addSeparator();
+        if (auto act = codeView->actionCollection()->action("edit_select_all")) menu->addAction(act);
+        menu->addSeparator();
+        if (auto act = codeView->actionCollection()->action("edit_find")) menu->addAction(act);
+        if (auto act = codeView->actionCollection()->action("edit_find_next")) menu->addAction(act);
+        if (auto act = codeView->actionCollection()->action("edit_find_prev")) menu->addAction(act);
+        if (auto act = codeView->actionCollection()->action("edit_replace")) menu->addAction(act);
+        menu->addSeparator();
+        menu->addAction(exportPdfFileMenuItem);
+        menu->addAction(togglePreviewViewMenuItem);
+    };
+    connect(editorMenu, &QMenu::aboutToShow, this, [editorMenu, populateEditorMenu]() { populateEditorMenu(editorMenu); });
+    connect(codeView, &KTextEditor::View::contextMenuAboutToShow, this, [populateEditorMenu](KTextEditor::View* view, QMenu* menu) { populateEditorMenu(menu); });
+
+    previewScene->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(previewScene, &QWidget::customContextMenuRequested, this, [this, exportPdfFileMenuItem, togglePreviewViewMenuItem](const QPoint &pos) {
+        QMenu menu(previewScene);
+        menu.addAction(exportPdfFileMenuItem);
+        menu.addAction(togglePreviewViewMenuItem);
+        menu.addSeparator();
+        QAction* zoomInAct = menu.addAction(QIcon::fromTheme("zoom-in"), "Zoom In");
+        connect(zoomInAct, &QAction::triggered, this, [this]() { previewScene->zoomIn(); });
+        QAction* zoomOutAct = menu.addAction(QIcon::fromTheme("zoom-out"), "Zoom Out");
+        connect(zoomOutAct, &QAction::triggered, this, [this]() { previewScene->zoomOut(); });
+        QAction* zoomResetAct = menu.addAction(QIcon::fromTheme("zoom-original"), "Reset Zoom");
+        connect(zoomResetAct, &QAction::triggered, this, [this]() {
+            QFont f = previewScene->font();
+            f.setPointSize(11);
+            previewScene->setFont(f);
+        });
+        menu.addSeparator();
+        QAction* copyAct = menu.addAction(QIcon::fromTheme("edit-copy"), "Copy Selected Text");
+        copyAct->setEnabled(previewScene->textCursor().hasSelection());
+        connect(copyAct, &QAction::triggered, this, [this]() { previewScene->copy(); });
+        menu.exec(previewScene->mapToGlobal(pos));
+    });
+
+    pdfPreview->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(pdfPreview, &QWidget::customContextMenuRequested, this, [this, exportPdfFileMenuItem, togglePreviewViewMenuItem](const QPoint &pos) {
+        QMenu menu(pdfPreview);
+        menu.addAction(exportPdfFileMenuItem);
+        menu.addAction(togglePreviewViewMenuItem);
+        menu.addSeparator();
+        QAction* zoomInAct = menu.addAction(QIcon::fromTheme("zoom-in"), "Zoom In");
+        connect(zoomInAct, &QAction::triggered, this, [this]() { pdfPreview->setZoomFactor(pdfPreview->zoomFactor() * 1.25); });
+        QAction* zoomOutAct = menu.addAction(QIcon::fromTheme("zoom-out"), "Zoom Out");
+        connect(zoomOutAct, &QAction::triggered, this, [this]() { pdfPreview->setZoomFactor(pdfPreview->zoomFactor() * 0.8); });
+        QAction* zoomResetAct = menu.addAction(QIcon::fromTheme("zoom-original"), "Reset Zoom (100%)");
+        connect(zoomResetAct, &QAction::triggered, this, [this]() { pdfPreview->setZoomFactor(1.0); });
+        menu.exec(pdfPreview->mapToGlobal(pos));
     });
 
 };

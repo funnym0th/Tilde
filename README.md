@@ -1,67 +1,41 @@
 <div align="center">
   <img src="res/tilde.svg" width="128" height="128" alt="Tilde Logo" />
   <h1>Tilde</h1>
-  <p><b>A lightning-fast, native C++ Markdown & LaTeX editor built on Qt 6 & KDE KatePart</b></p>
+  <p><b>A native C++ Markdown & LaTeX editor built on Qt 6 & KDE KatePart</b></p>
   
   [![Qt 6](https://img.shields.io/badge/Qt-6.x-41CD52?style=flat-square&logo=qt&logoColor=white)](https://www.qt.io/)
-  [![C++20](https://img.shields.io/badge/C%2B%2B-20-00599C?style=flat-square&logo=c%2B%2B&logoColor=white)](https://en.cppreference.com/w/cpp/20)
   [![KDE KatePart](https://img.shields.io/badge/Engine-KDE_KatePart-1D99F3?style=flat-square&logo=kde&logoColor=white)](https://api.kde.org/frameworks/ktexteditor/html/)
-  [![Memory](https://img.shields.io/badge/RAM-~50_MB-brightgreen?style=flat-square)](https://github.com/funnym0th/Tilde)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+
 </div>
 
 ---
 
-## ⚡ Why Tilde?
+## Why Tilde?
 
-Modern document editors are often bloated Electron applications consuming hundreds of megabytes of RAM just to render text. **Tilde** is different. Built natively in **C++20** with **Qt 6** and the industrial-grade **KDE KatePart (`KTextEditor`)** engine, Tilde gives you full IDE capabilities while resting at roughly **~50 MB of RAM** and near **0% idle CPU usage**.
+Modern document editors are often bloated Electron applications consuming hundreds of megabytes of RAM just to render text by using Chromium or other web-based renders. **Tilde** is built natively in C++ with Qt 6 and the KDE KatePart (`KTextEditor`) engine used in KDevelop and Kate, giving you full IDE capabilities without skyrocketing your RAM and CPU usage.
 
-Whether you are drafting technical notes in Markdown or writing complex scientific papers in LaTeX, Tilde provides a seamless, distraction-free editing experience with live visual previews and instant PDF compilation.
+Whether you are drafting technical notes, repo README.md's in Markdown or writing complex scientific papers in LaTeX, Tilde provides a distraction-free editing experience with live visual previews and instant PDF compilation.
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-* **🚀 Industrial-Grade Editor (`KDE KatePart`)**:
-  * Full **Language Server Protocol (`LSP`)** support out of the box (`auto-completion, diagnostics, and jump-to-definition`).
-  * Built-in **Vim / Vi modal editing** support (`enable via Kate editor preferences`).
-  * Multi-cursor support, minimap, line numbering, and syntax highlighting for over 300 languages.
-  * Native find & replace with regular expressions.
+* **Dual Rendering**:
+  * **Markdown Live Preview**: Instant live rendering of headers, lists, code blocks, tables, and formatting via Qt's native text engine.
+  * **Asynchronous LaTeX Preview**: Real-time background compilation using `pdflatex` + `pdftoppm`.
 
-* **📐 Debounced Dual Rendering Engine**:
-  * **Markdown Live Preview**: Instant live rendering of headers, lists, code blocks, tables, and formatting via Qt's native text engine as you type (`Ctrl+P`).
-  * **Asynchronous LaTeX Preview**: Real-time background compilation using `pdflatex` + `pdftoppm`. Debounced input timers ensure zero UI freezes or lag even while editing heavy mathematical equations (`$E=mc^2$`).
-
-* **📄 One-Click Dual PDF Export (`Ctrl+E`)**:
+* **PDF Export**:
   * Export clean, paginated, publication-ready **PDFs directly from Markdown**.
   * Export fully compiled **LaTeX documents to PDF** seamlessly.
 
-* **🖥️ Native Desktop Integration**:
-  * Full command-line argument support (`tilde <filename>` or `tilde %U` from your file manager).
-  * Custom 3D mechanical keycap vector branding (`res/tilde.svg`).
+* **Native Desktop Integration**:
+  * Command-line argument support (`tilde <filename>` or `tilde %U` from your file manager).
   * Exclusive, conflict-free keyboard shortcuts across all actions.
 
----
-
-## ⌨️ Keyboard Shortcuts
-
-| Shortcut | Action |
-| :--- | :--- |
-| **`Ctrl + N`** | Create a new blank document |
-| **`Ctrl + O`** | Open an existing document from disk |
-| **`Ctrl + S`** | Save the current document |
-| **`Ctrl + Shift + S`** | Save As new file |
-| **`Ctrl + P`** | Toggle Show Live Preview (`Markdown / LaTeX`) |
-| **`Ctrl + E`** | Export current document to PDF |
-| **`Ctrl + Q`** | Quit application |
-
----
-
-## 🛠️ Building & Installation
+## Building & Installation
 
 ### Prerequisites (`Linux / KDE Plasma`)
-
-Make sure you have Qt 6, KTextEditor (`KF6`), and CMake installed alongside a C++20 compiler (`GCC/Clang`):
+Make sure you have Qt 6, KTextEditor (`KF6`), and CMake installed alongside a C++17 compiler (`GCC/Clang`):
 
 #### **Arch Linux / Manjaro**
 ```bash
@@ -88,7 +62,7 @@ cd Tilde
 # 2. Configure with CMake
 cmake -B build -S .
 
-# 3. Build natively (`using all CPU cores`)
+# 3. Build
 cmake --build build -j$(nproc)
 
 # 4. Run Tilde
@@ -97,13 +71,6 @@ cmake --build build -j$(nproc)
 
 ---
 
-## 📂 Example Documents
+## License
 
-Check out the included `examples/` directory for sample test files:
-* **`examples/benchmark.tex`**: A rich LaTeX document with mathematical equations, custom formatting, and physics formulas to test the debounced live rendering engine.
-
----
-
-## 📜 License
-
-This project is licensed under the **MIT License**. Feel free to inspect, modify, and distribute!
+This project is licensed under the **GNU General Public License Version 3 (GPL-3.0)**. 
