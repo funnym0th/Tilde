@@ -7,11 +7,14 @@
 #include <QMenuBar>
 #include <QFileDialog>
 #include <KActionCollection>
+#include <QIcon>
+#include <QPrinter>
+#include <QTextDocument>
 
 void MainWindow::openFile(const QString &filePath) {
     if(!filePath.isEmpty()) {
         codeDocument -> openUrl(QUrl::fromLocalFile(filePath));
-        setWindowTitle("Tilde - " + filePath);
+        setWindowTitle("Tilde - " + QFileInfo(filePath).fileName());
     }
 }
 
@@ -50,18 +53,26 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
     QMenu* viewMenuBar = menuBar() -> addMenu("View");
 
     QAction* openFileMenuItem = fileMenuBar -> addAction("Open...");
+    openFileMenuItem -> setIcon(QIcon::fromTheme("document-open"));
     QAction* saveFileMenuItem = fileMenuBar -> addAction("Save");
+    saveFileMenuItem -> setIcon(QIcon::fromTheme("document-save"));
     QAction* saveAsFileMenuItem = fileMenuBar -> addAction("Save as...");
+    saveAsFileMenuItem -> setIcon(QIcon::fromTheme("document-save-as"));
     fileMenuBar -> addSeparator();
-    QAction* quitAppMenuItem = fileMenuBar -> addAction("Quit");
+    QAction* exportPdfFileMenuItem = fileMenuBar -> addAction("Export as PDF...");
+    exportPdfFileMenuItem -> setIcon(QIcon::fromTheme("document-export"));
+    fileMenuBar -> addSeparator();
+    QAction* quitFileMenuItem = fileMenuBar -> addAction("Quit");
+    quitFileMenuItem -> setIcon(QIcon::fromTheme("application-exit"));
 
     QAction* togglePreviewViewMenuItem = viewMenuBar -> addAction("Show Live Preview");
     togglePreviewViewMenuItem->setCheckable(true);
     togglePreviewViewMenuItem->setChecked(true);
+    togglePreviewViewMenuItem -> setIcon(QIcon::fromTheme("view-preview"));
 
 
 
-    connect(quitAppMenuItem, &QAction::triggered, this, [this](){close();});
+    connect(quitFileMenuItem, &QAction::triggered, this, [this](){close();});
     connect(openFileMenuItem, &QAction::triggered, this, [this]() {
         QString filePath = QFileDialog::getOpenFileName(this, "Open File", QDir::homePath(), "Markdown and Latex files (*.md *.tex)");
         openFile(filePath);
@@ -70,7 +81,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
         QString filePath = QFileDialog::getSaveFileName(this, "Save File", QDir::homePath(), "Markdown (*.md);;Latex (*.tex)");
         if (!filePath.isEmpty()) {
             codeDocument -> saveAs(QUrl::fromLocalFile(filePath));
-            setWindowTitle("Tilde - " + filePath);
+            setWindowTitle("Tilde - " + QFileInfo(filePath).fileName());
         }
     });
     connect(saveFileMenuItem, &QAction::triggered, this, [this, saveAsFileMenuItem]() {
@@ -86,6 +97,16 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
         previewScene -> setVisible(check);
     });
 
+    connect(exportPdfFileMenuItem, &QAction::triggered, this, [this]() {
+        QString filePath = QFileDialog::getSaveFileName(this, "Save Exported file", QDir::homePath(), "PDF Document (*.pdf)");
+        if (!filePath.isEmpty()) {
+            QPrinter printer(QPrinter::HighResolution);
+            printer.setOutputFormat(QPrinter::PdfFormat);
+            printer.setOutputFileName(filePath);
+            previewScene->document()->print(&printer);
+        }
+    });
+
     editMenuBar -> addAction(codeView->actionCollection() -> action("edit_undo"));
     editMenuBar -> addAction(codeView->actionCollection() -> action("edit_redo"));
     editMenuBar -> addSeparator();
@@ -94,6 +115,12 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
     editMenuBar -> addAction(codeView->actionCollection() -> action("edit_paste"));
     editMenuBar -> addSeparator();
     editMenuBar -> addAction(codeView->actionCollection() -> action("edit_select_all"));
+    editMenuBar -> addSeparator();
+    editMenuBar -> addAction(codeView->actionCollection() -> action("edit_find"));
+    editMenuBar -> addAction(codeView->actionCollection() -> action("edit_find_next"));
+    editMenuBar -> addAction(codeView->actionCollection() -> action("edit_find_prev"));
+    editMenuBar -> addAction(codeView->actionCollection() -> action("edit_replace"));
+
 
     viewMenuBar -> addSeparator();
     viewMenuBar -> addAction(codeView->actionCollection() -> action("view_line_numbers"));
