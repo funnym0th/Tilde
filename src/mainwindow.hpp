@@ -1,6 +1,7 @@
 #pragma once
 #include <QMainWindow>
 
+class QCloseEvent;
 class QSplitter;
 class QTextBrowser;
 class QStackedWidget;
@@ -8,6 +9,7 @@ class QPdfView;
 class QPdfDocument;
 class QProcess;
 class QTimer;
+class QAction;
 namespace KTextEditor {
     class Document;
     class View;
@@ -20,7 +22,16 @@ public:
     ~MainWindow();
     void openFile(const QString &filePath);
     void refreshPreview();
+protected:
+    void closeEvent(QCloseEvent *event) override;
 private:
+    void setupEditor();
+    void setupPreview();
+    void setupMenuBar();
+    void setupConnections();
+    void setupContextMenus();
+    bool isLatexMode() const;
+
     KTextEditor::Document* codeDocument = nullptr;
     KTextEditor::View* codeView = nullptr;
     QTextBrowser* previewScene = nullptr;
@@ -30,4 +41,13 @@ private:
     QPdfDocument* pdfDocument = nullptr;
     QProcess* latexProcess = nullptr;
     QTimer* latexTimer = nullptr;
+
+    QAction* newFileAction = nullptr;
+    QAction* openFileAction = nullptr;
+    QAction* saveFileAction = nullptr;
+    QAction* saveAsFileAction = nullptr;
+    QAction* exportPdfAction = nullptr;
+    QAction* quitFileAction = nullptr;
+    QAction* togglePreviewAction = nullptr;
 };
+
