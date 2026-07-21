@@ -10,8 +10,11 @@ class QPdfDocument;
 class QProcess;
 class QTimer;
 class QAction;
+class QMenu;
 class QTemporaryDir;
+class KMessageWidget;
 namespace KTextEditor {
+
 
     class Document;
     class View;
@@ -35,6 +38,8 @@ private:
     bool isLatexMode() const;
     void updateWindowTitle();
     QString getTempPath() const;
+    void updateRecentFilesActions();
+    void addRecentFile(const QString &filePath);
 
     KTextEditor::Document* codeDocument = nullptr;
 
@@ -48,6 +53,13 @@ private:
     QProcess* latexProcess = nullptr;
     QTimer* latexTimer = nullptr;
     QTemporaryDir* tempDir = nullptr;
+    KMessageWidget* errorMessage = nullptr;
+
+    static constexpr int MaxRecentFiles = 10;
+
+    QMenu* recentFilesMenu = nullptr;
+
+    QAction* recentFileActions[MaxRecentFiles];
 
     QAction* newFileAction = nullptr;
 
@@ -61,5 +73,6 @@ private:
     QAction* syncScrollingAction = nullptr;
     bool isSyncingScroll = false;
 };
+
 
 

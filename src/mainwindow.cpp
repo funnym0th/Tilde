@@ -4,8 +4,10 @@
 #include <ktexteditor/document.h>
 #include <ktexteditor/cursor.h>
 #include <QSplitter>
-
+#include <QVBoxLayout>
+#include <KMessageWidget>
 #include <QScreen>
+
 #include <QGuiApplication>
 #include <QMenuBar>
 #include <QMenu>
@@ -24,11 +26,10 @@
 #include <QDir>
 #include <QTemporaryDir>
 #include <QScrollBar>
+#include <QSettings>
 #include <QTextBrowser>
 #include <QKeySequence>
 #include <QCloseEvent>
-
-
 #include <QMessageBox>
 
 void MainWindow::closeEvent(QCloseEvent *event) {
@@ -44,11 +45,11 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 void MainWindow::openFile(const QString &filePath) {
     if (!filePath.isEmpty()) {
         codeDocument->openUrl(QUrl::fromLocalFile(filePath));
+        addRecentFile(filePath);
         updateWindowTitle();
         refreshPreview();
     }
 }
-
 
 bool MainWindow::isLatexMode() const {
     QString filePath = codeDocument->url().toLocalFile();
@@ -73,17 +74,62 @@ QString MainWindow::getTempPath() const {
     return QDir::tempPath();
 }
 
+void MainWindow::updateRecentFilesActions() {
+    QSettings settings("Tilde", "TildeEditor");
+    QStringList files = settings.value("recentFiles").toStringList();
 
+    QStringList validFiles;
+    for (const QString &file : files) {
+        if (QFile::exists(file) && !validFiles.contains(file)) {
+            validFiles.append(file);
+        }
+    }
+    if (validFiles != files) {
+        settings.setValue("recentFiles", validFiles);
+        files = validFiles;
+    }
+
+    int numRecentFiles = qMin(files.size(), static_cast<int>(MaxRecentFiles));
+    for (int i = 0; i < numRecentFiles; ++i) {
+
+        QString text = QString("&%1 %2").arg(i + 1).arg(QFileInfo(files[i]).fileName());
+        recentFileActions[i]->setText(text);
+        recentFileActions[i]->setData(files[i]);
+        recentFileActions[i]->setToolTip(files[i]);
+        recentFileActions[i]->setVisible(true);
+    }
+    for (int i = numRecentFiles; i < MaxRecentFiles; ++i) {
+        recentFileActions[i]->setVisible(false);
+    }
+    recentFilesMenu->setEnabled(numRecentFiles > 0);
+}
+
+void MainWindow::addRecentFile(const QString &filePath) {
+    if (filePath.isEmpty()) return;
+    QSettings settings("Tilde", "TildeEditor");
+    QStringList files = settings.value("recentFiles").toStringList();
+    files.removeAll(filePath);
+    files.prepend(filePath);
+    while (files.size() > MaxRecentFiles) {
+        files.removeLast();
+    }
+    settings.setValue("recentFiles", files);
+    updateRecentFilesActions();
+}
 
 void MainWindow::refreshPreview() {
     if (isLatexMode()) {
         previewStack->setCurrentWidget(pdfPreview);
         latexTimer->start(500);
     } else {
+        if (errorMessage && errorMessage->isVisible()) {
+            errorMessage->animatedHide();
+        }
         previewStack->setCurrentWidget(previewScene);
         previewScene->setMarkdown(codeDocument->text());
     }
 }
+
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow{parent} {
     setWindowTitle("Tilde");
@@ -106,7 +152,6 @@ MainWindow::~MainWindow() {
     }
     delete tempDir;
 }
-
 
 void MainWindow::setupEditor() {
     codeDocument = KTextEditor::Editor::instance()->createDocument(this);
@@ -152,7 +197,20 @@ void MainWindow::setupPreview() {
     mainScene->addWidget(previewStack);
     mainScene->setSizes({500, 500});
 
-    setCentralWidget(mainScene);
+    errorMessage = new KMessageWidget(this);
+    errorMessage->setMessageType(KMessageWidget::Error);
+    errorMessage->setWordWrap(true);
+    errorMessage->setCloseButtonVisible(true);
+    errorMessage->hide();
+
+    QWidget* centralContainer = new QWidget(this);
+    QVBoxLayout* centralLayout = new QVBoxLayout(centralContainer);
+    centralLayout->setContentsMargins(0, 0, 0, 0);
+    centralLayout->setSpacing(0);
+    centralLayout->addWidget(errorMessage);
+    centralLayout->addWidget(mainScene, 1);
+
+    setCentralWidget(centralContainer);
 
     tempDir = new QTemporaryDir(QDir::tempPath() + "/tilde_XXXXXX");
 }
@@ -171,7 +229,20 @@ void MainWindow::setupMenuBar() {
     openFileAction->setIcon(QIcon::fromTheme("document-open"));
     openFileAction->setShortcut(QKeySequence::Open);
 
+    recentFilesMenu = fileMenuBar->addMenu("Open Recent");
+    recentFilesMenu->setIcon(QIcon::fromTheme("document-open-recent"));
+    for (int i = 0; i < MaxRecentFiles; ++i) {
+        recentFileActions[i] = new QAction(this);
+        recentFileActions[i]->setVisible(false);
+        connect(recentFileActions[i], &QAction::triggered, this, [this, i]() {
+            openFile(recentFileActions[i]->data().toString());
+        });
+        recentFilesMenu->addAction(recentFileActions[i]);
+    }
+    updateRecentFilesActions();
+
     saveFileAction = fileMenuBar->addAction("Save");
+
     saveFileAction->setIcon(QIcon::fromTheme("document-save"));
     saveFileAction->setShortcut(QKeySequence::Save);
 
@@ -233,7 +304,6 @@ void MainWindow::setupConnections() {
         refreshPreview();
     });
 
-
     connect(quitFileAction, &QAction::triggered, this, [this]() { close(); });
 
     connect(openFileAction, &QAction::triggered, this, [this]() {
@@ -245,11 +315,11 @@ void MainWindow::setupConnections() {
         QString filePath = QFileDialog::getSaveFileName(this, "Save File", QDir::homePath(), "Markdown (*.md);;LaTeX (*.tex)");
         if (!filePath.isEmpty()) {
             codeDocument->saveAs(QUrl::fromLocalFile(filePath));
+            addRecentFile(filePath);
             updateWindowTitle();
             refreshPreview();
         }
     });
-
 
     connect(saveFileAction, &QAction::triggered, this, [this]() {
         if (!codeDocument->url().isEmpty()) {
@@ -313,6 +383,49 @@ void MainWindow::setupConnections() {
             if (QFile::exists(compiledPdf)) {
                 pdfDocument->load(compiledPdf);
             }
+            if (errorMessage && errorMessage->isVisible()) {
+                errorMessage->animatedHide();
+            }
+        } else if (errorMessage && isLatexMode()) {
+            QString output = QString::fromLocal8Bit(latexProcess->readAllStandardOutput());
+            QString errOutput = QString::fromLocal8Bit(latexProcess->readAllStandardError());
+            QString combined = output + "\n" + errOutput;
+
+            QStringList lines = combined.split('\n');
+            QString firstErrorLine;
+            QString contextLine;
+            for (int i = 0; i < lines.size(); ++i) {
+                QString line = lines[i].trimmed();
+                if (line.startsWith('!')) {
+                    firstErrorLine = line;
+                    for (int j = i + 1; j < qMin(i + 5, lines.size()); ++j) {
+                        QString nextLine = lines[j].trimmed();
+                        if (nextLine.startsWith("l.")) {
+                            contextLine = nextLine;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            QString msg = "Failed to compile LaTeX document: ";
+            if (!firstErrorLine.isEmpty()) {
+                msg += firstErrorLine;
+                if (!contextLine.isEmpty()) {
+                    msg += " (" + contextLine + ")";
+                }
+            } else {
+                msg += "Compilation failed with exit code " + QString::number(exitCode) + ". Please check your syntax.";
+            }
+            errorMessage->setText(msg);
+            errorMessage->animatedShow();
+        }
+    });
+
+    connect(latexProcess, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
+        if (error == QProcess::FailedToStart && errorMessage && isLatexMode()) {
+            errorMessage->setText("Failed to start pdflatex. Please ensure TeX Live / pdflatex is installed and in your PATH.");
+            errorMessage->animatedShow();
         }
     });
 
@@ -360,7 +473,6 @@ void MainWindow::setupConnections() {
     connect(codeView, &KTextEditor::View::verticalScrollPositionChanged, this, [syncFromEditor](KTextEditor::View*, const KTextEditor::Cursor&) { syncFromEditor(); });
     connect(codeView, &KTextEditor::View::cursorPositionChanged, this, [syncFromEditor](KTextEditor::View*, const KTextEditor::Cursor&) { syncFromEditor(); });
 
-
     connect(previewScene->verticalScrollBar(), &QScrollBar::valueChanged, this, [this](int value) {
         if (isSyncingScroll || isLatexMode() || !syncScrollingAction || !syncScrollingAction->isChecked()) return;
         QScrollBar* sceneBar = previewScene->verticalScrollBar();
@@ -385,8 +497,6 @@ void MainWindow::setupConnections() {
         isSyncingScroll = false;
     });
 }
-
-
 
 void MainWindow::setupContextMenus() {
     QMenu* editorMenu = new QMenu(codeView);
@@ -452,4 +562,3 @@ void MainWindow::setupContextMenus() {
         menu.exec(pdfPreview->mapToGlobal(pos));
     });
 }
-
