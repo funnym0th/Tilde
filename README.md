@@ -23,6 +23,7 @@ Whether you are drafting technical notes, repo README.md's in Markdown or writin
 * **Dual Rendering**:
   * **Markdown Live Preview**: Instant live rendering of headers, lists, code blocks, tables, and formatting via Qt's native text engine.
   * **Asynchronous LaTeX Preview**: Real-time background compilation using `pdflatex` + `pdftoppm`.
+  * **Scroll sync**: Scroll on both the editor and preview and the same time.
 
 * **PDF Export**:
   * Export clean, paginated, publication-ready **PDFs directly from Markdown**.
