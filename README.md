@@ -3,9 +3,10 @@
   <h1>Tilde</h1>
   <p><b>A native C++ Markdown & LaTeX editor built on Qt 6 & KDE KatePart</b></p>
   
-  ![Qt 6](https://img.shields.io/badge/Qt-6.x-41CD52?style=flat-square&logo=qt&logoColor=white)](https://www.qt.io/)
-  ![KDE KatePart](https://img.shields.io/badge/Engine-KDE_KatePart-1D99F3?style=flat-square&logo=kde&logoColor=white)](https://api.kde.org/frameworks/ktexteditor/html/)
-  ![GitHub License](https://img.shields.io/github/license/:funnym0th/:Tilde)
+  [![Qt 6](https://img.shields.io/badge/Qt-6.x-41CD52?style=flat-square&logo=qt&logoColor=white)](https://www.qt.io/)
+  [![KDE KatePart](https://img.shields.io/badge/Engine-KDE_KatePart-1D99F3?style=flat-square&logo=kde&logoColor=white)](https://api.kde.org/frameworks/ktexteditor/html/)
+  [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0)
+
 
 </div>
 
