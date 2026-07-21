@@ -1,0 +1,48 @@
+name: Release Tilde
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build Linux Packages (Fedora RPM & Universal Tarball)
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Fedora build dependencies
+        run: |
+          dnf install -y gcc-c++ cmake ninja-build qt6-qtbase-devel qt6-qttools-devel qt6-qtpdf-devel kf6-ktexteditor-devel desktop-file-utils rpm-build rpmdevtools git
+
+      - name: Configure and compile with CMake & Ninja
+        run: |
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake --build build
+
+      - name: Generate TGZ universal binary package with CPack
+        run: |
+          cd build && cpack -G TGZ
+
+      - name: Generate native Fedora RPM package with rpmbuild
+        run: |
+          mkdir -p build/rpmbuild/{SOURCES,SPECS,RPMS,BUILD}
+          git archive --format=tar.gz --prefix=tilde-0.1.0/ -o build/rpmbuild/SOURCES/tilde-0.1.0.tar.gz HEAD
+          cp packaging/fedora/tilde.spec build/rpmbuild/SPECS/
+          rpmbuild --define "_topdir $(pwd)/build/rpmbuild" -bb build/rpmbuild/SPECS/tilde.spec
+
+      - name: Upload Release Assets to GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/Tilde-*.tar.gz
+            build/rpmbuild/RPMS/*/*.rpm
