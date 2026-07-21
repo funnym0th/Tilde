@@ -399,26 +399,34 @@ void MainWindow::setupConnections() {
 
     connect(latexTimer, &QTimer::timeout, this, [this]() {
         QString filePath = codeDocument->url().toLocalFile();
-        if (!filePath.isEmpty()) {
-            if (latexProcess->state() != QProcess::NotRunning) {
-                latexProcess->kill();
-                latexProcess->waitForFinished(100);
-            }
-            latexProcess->setWorkingDirectory(QFileInfo(filePath).path());
-            latexProcess->start("pdflatex", {
-                "-interaction=nonstopmode",
-                "-output-directory=" + getTempPath(),
-                filePath
-            });
+        QString fileName = filePath.isEmpty() ? "Untitled.tex" : QFileInfo(filePath).fileName();
+        QString workingDir = filePath.isEmpty() ? getTempPath() : QFileInfo(filePath).path();
+
+        QString tempTexPath = getTempPath() + "/" + fileName;
+        QFile tempFile(tempTexPath);
+        if (tempFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            tempFile.write(codeDocument->text().toUtf8());
+            tempFile.close();
         }
+
+        if (latexProcess->state() != QProcess::NotRunning) {
+            latexProcess->kill();
+            latexProcess->waitForFinished(100);
+        }
+        latexProcess->setWorkingDirectory(workingDir);
+        latexProcess->start("pdflatex", {
+            "-interaction=nonstopmode",
+            "-output-directory=" + getTempPath(),
+            tempTexPath
+        });
     });
 
     connect(latexProcess, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus status) {
         if (status == QProcess::CrashExit) {
             return;
         }
-        if (status == QProcess::NormalExit && exitCode == 0 && !codeDocument->url().isEmpty()) {
-            QString name = QFileInfo(codeDocument->url().toLocalFile()).baseName();
+        if (status == QProcess::NormalExit && exitCode == 0) {
+            QString name = codeDocument->url().isEmpty() ? "Untitled" : QFileInfo(codeDocument->url().toLocalFile()).baseName();
             QString compiledPdf = getTempPath() + "/" + name + ".pdf";
             if (QFile::exists(compiledPdf)) {
                 pdfDocument->load(compiledPdf);
