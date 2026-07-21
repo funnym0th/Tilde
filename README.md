@@ -33,7 +33,7 @@ Whether you are drafting technical notes, repo README.md's in Markdown or writin
 
 * **Native Desktop Integration**:
   * Command-line argument support (`tilde <filename>` or `tilde %U` from your file manager).
-  * Exclusive, conflict-free keyboard shortcuts across all actions.
+  * Support for desktop actions (Open with, or other context menu options)
 
 ## Building & Installation
 
