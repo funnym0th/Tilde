@@ -37,26 +37,31 @@ Whether you are drafting technical notes, repo README.md's in Markdown or writin
 
 ## Building & Installation
 
-### Prerequisites (`Linux / KDE Plasma`)
+### Package Manager
+Currently the only package available is for distros using RPM package managers. They're available in the [Releases](https://github.com/funnym0th/Tilde/releases/latest) of the repository.
+
+### Building from source 
+
+#### Prerequisites (`Linux / KDE Plasma`)
 Make sure you have Qt 6 (including the PDF module), KTextEditor (`KF6`), and CMake installed alongside a C++17 compiler (`GCC/Clang`):
 
-#### **Fedora**
+##### **Fedora**
 ```bash
 sudo dnf install gcc-c++ cmake ninja-build qt6-qtbase-devel qt6-qttools-devel qt6-qtpdf-devel kf6-ktexteditor-devel texlive-scheme-basic
 ```
 
-#### **Arch Linux / Manjaro**
+##### **Arch Linux / Manjaro**
 *(Note: On Arch Linux, the Qt6 PDF module is currently packaged within `qt6-webengine`)*
 ```bash
 sudo pacman -S base-devel cmake ninja qt6-base qt6-tools qt6-webengine ktexteditor texlive-bin
 ```
 
-#### **Ubuntu / Debian (`KF6 / Qt6`)**
+##### **Ubuntu / Debian (`KF6 / Qt6`)**
 ```bash
 sudo apt update && sudo apt install build-essential cmake ninja-build qt6-base-dev qt6-tools-dev qt6-pdf-dev libkf6texteditor-dev texlive-latex-base
 ```
 
-### Compiling from Source
+#### Compiling from Source
 
 ```bash
 # 1. Clone the repository
