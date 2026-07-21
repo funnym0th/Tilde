@@ -14,6 +14,8 @@ qt_add_executable(tilde
     src/main.cpp
     src/mainwindow.cpp
 )
+
+
 target_link_libraries(tilde PRIVATE Qt6::Widgets Qt6::PrintSupport Qt6::Pdf Qt6::PdfWidgets KF6::TextEditor)
 
 include(GNUInstallDirs)

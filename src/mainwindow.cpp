@@ -1,5 +1,7 @@
 #include "mainwindow.hpp"
 #include <ktexteditor/editor.h>
+
+
 #include <ktexteditor/view.h>
 #include <ktexteditor/document.h>
 #include <ktexteditor/cursor.h>
@@ -44,10 +46,12 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 
 void MainWindow::openFile(const QString &filePath) {
     if (!filePath.isEmpty()) {
-        codeDocument->openUrl(QUrl::fromLocalFile(filePath));
-        addRecentFile(filePath);
-        updateWindowTitle();
-        refreshPreview();
+        QString absPath = QFileInfo(filePath).absoluteFilePath();
+        if (codeDocument->openUrl(QUrl::fromLocalFile(absPath))) {
+            addRecentFile(absPath);
+            updateWindowTitle();
+            refreshPreview();
+        }
     }
 }
 
@@ -56,7 +60,7 @@ bool MainWindow::isLatexMode() const {
     if (!filePath.isEmpty()) {
         return QFileInfo(filePath).suffix().toLower() == "tex";
     }
-    return previewStack->currentWidget() == pdfPreview;
+    return false;
 }
 
 void MainWindow::updateWindowTitle() {
@@ -175,6 +179,10 @@ void MainWindow::setupEditor() {
                             "QScrollBar:horizontal { height: 0px; }");
 }
 
+
+
+
+
 void MainWindow::setupPreview() {
     previewScene = new QTextBrowser(this);
     previewScene->setMaximumWidth(this->width() * 0.8);
@@ -289,6 +297,7 @@ void MainWindow::setupMenuBar() {
     editMenuBar->addAction(codeView->actionCollection()->action("edit_replace"));
 
     viewMenuBar->addSeparator();
+
     viewMenuBar->addAction(codeView->actionCollection()->action("view_line_numbers"));
     viewMenuBar->addAction(codeView->actionCollection()->action("view_dynamic_word_wrap"));
     viewMenuBar->addSeparator();
@@ -299,14 +308,21 @@ void MainWindow::setupMenuBar() {
 
 void MainWindow::setupConnections() {
     connect(newFileAction, &QAction::triggered, this, [this]() {
-        codeDocument->closeUrl();
+        if (!codeDocument->closeUrl()) {
+            return;
+        }
+        previewStack->setCurrentWidget(previewScene);
         updateWindowTitle();
         refreshPreview();
     });
 
     connect(quitFileAction, &QAction::triggered, this, [this]() { close(); });
 
+
+
+
     connect(openFileAction, &QAction::triggered, this, [this]() {
+
         QString filePath = QFileDialog::getOpenFileName(this, "Open File", QDir::homePath(), "Markdown and LaTeX files (*.md *.tex)");
         openFile(filePath);
     });
@@ -344,6 +360,23 @@ void MainWindow::setupConnections() {
         QString filePath = QFileDialog::getSaveFileName(this, "Save Exported File", QDir::homePath(), "PDF Document (*.pdf)");
         if (!filePath.isEmpty()) {
             if (isLatexMode()) {
+                if (codeDocument->isModified() && !activeFile.isEmpty()) {
+                    codeDocument->save();
+                }
+                if (latexTimer->isActive()) {
+                    latexTimer->stop();
+                }
+                if (latexProcess->state() != QProcess::NotRunning) {
+                    latexProcess->kill();
+                    latexProcess->waitForFinished(100);
+                }
+                latexProcess->setWorkingDirectory(QFileInfo(activeFile).path());
+                latexProcess->start("pdflatex", {
+                    "-interaction=nonstopmode",
+                    "-output-directory=" + getTempPath(),
+                    activeFile
+                });
+                latexProcess->waitForFinished(10000);
                 QString baseName = QFileInfo(activeFile).baseName();
                 QString compiledPdf = getTempPath() + "/" + baseName + ".pdf";
                 if (QFile::exists(compiledPdf)) {
@@ -351,6 +384,9 @@ void MainWindow::setupConnections() {
                         QFile::remove(filePath);
                     }
                     QFile::copy(compiledPdf, filePath);
+                } else if (errorMessage) {
+                    errorMessage->setText("Cannot export PDF: compiled preview not found or compilation failed.");
+                    errorMessage->animatedShow();
                 }
             } else {
                 QPrinter printer(QPrinter::HighResolution);
@@ -368,6 +404,7 @@ void MainWindow::setupConnections() {
                 latexProcess->kill();
                 latexProcess->waitForFinished(100);
             }
+            latexProcess->setWorkingDirectory(QFileInfo(filePath).path());
             latexProcess->start("pdflatex", {
                 "-interaction=nonstopmode",
                 "-output-directory=" + getTempPath(),
@@ -377,6 +414,9 @@ void MainWindow::setupConnections() {
     });
 
     connect(latexProcess, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus status) {
+        if (status == QProcess::CrashExit) {
+            return;
+        }
         if (status == QProcess::NormalExit && exitCode == 0 && !codeDocument->url().isEmpty()) {
             QString name = QFileInfo(codeDocument->url().toLocalFile()).baseName();
             QString compiledPdf = getTempPath() + "/" + name + ".pdf";
@@ -471,7 +511,6 @@ void MainWindow::setupConnections() {
 
     connect(codeView->verticalScrollBar(), &QScrollBar::valueChanged, this, [syncFromEditor](int) { syncFromEditor(); });
     connect(codeView, &KTextEditor::View::verticalScrollPositionChanged, this, [syncFromEditor](KTextEditor::View*, const KTextEditor::Cursor&) { syncFromEditor(); });
-    connect(codeView, &KTextEditor::View::cursorPositionChanged, this, [syncFromEditor](KTextEditor::View*, const KTextEditor::Cursor&) { syncFromEditor(); });
 
     connect(previewScene->verticalScrollBar(), &QScrollBar::valueChanged, this, [this](int value) {
         if (isSyncingScroll || isLatexMode() || !syncScrollingAction || !syncScrollingAction->isChecked()) return;
@@ -501,22 +540,24 @@ void MainWindow::setupConnections() {
 void MainWindow::setupContextMenus() {
     QMenu* editorMenu = new QMenu(codeView);
     codeView->setContextMenu(editorMenu);
-    auto populateEditorMenu = [this](QMenu* menu) {
+    auto populateEditorMenu = [this, editorMenu](QMenu* menu) {
         if (!menu) return;
-        menu->clear();
-        if (auto act = codeView->actionCollection()->action("edit_undo")) menu->addAction(act);
-        if (auto act = codeView->actionCollection()->action("edit_redo")) menu->addAction(act);
-        menu->addSeparator();
-        if (auto act = codeView->actionCollection()->action("edit_cut")) menu->addAction(act);
-        if (auto act = codeView->actionCollection()->action("edit_copy")) menu->addAction(act);
-        if (auto act = codeView->actionCollection()->action("edit_paste")) menu->addAction(act);
-        menu->addSeparator();
-        if (auto act = codeView->actionCollection()->action("edit_select_all")) menu->addAction(act);
-        menu->addSeparator();
-        if (auto act = codeView->actionCollection()->action("edit_find")) menu->addAction(act);
-        if (auto act = codeView->actionCollection()->action("edit_find_next")) menu->addAction(act);
-        if (auto act = codeView->actionCollection()->action("edit_find_prev")) menu->addAction(act);
-        if (auto act = codeView->actionCollection()->action("edit_replace")) menu->addAction(act);
+        if (menu == editorMenu || menu->actions().isEmpty()) {
+            menu->clear();
+            if (auto act = codeView->actionCollection()->action("edit_undo")) menu->addAction(act);
+            if (auto act = codeView->actionCollection()->action("edit_redo")) menu->addAction(act);
+            menu->addSeparator();
+            if (auto act = codeView->actionCollection()->action("edit_cut")) menu->addAction(act);
+            if (auto act = codeView->actionCollection()->action("edit_copy")) menu->addAction(act);
+            if (auto act = codeView->actionCollection()->action("edit_paste")) menu->addAction(act);
+            menu->addSeparator();
+            if (auto act = codeView->actionCollection()->action("edit_select_all")) menu->addAction(act);
+            menu->addSeparator();
+            if (auto act = codeView->actionCollection()->action("edit_find")) menu->addAction(act);
+            if (auto act = codeView->actionCollection()->action("edit_find_next")) menu->addAction(act);
+            if (auto act = codeView->actionCollection()->action("edit_find_prev")) menu->addAction(act);
+            if (auto act = codeView->actionCollection()->action("edit_replace")) menu->addAction(act);
+        }
         menu->addSeparator();
         menu->addAction(exportPdfAction);
         menu->addAction(togglePreviewAction);

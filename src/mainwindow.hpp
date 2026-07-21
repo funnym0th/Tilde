@@ -14,8 +14,6 @@ class QMenu;
 class QTemporaryDir;
 class KMessageWidget;
 namespace KTextEditor {
-
-
     class Document;
     class View;
 }
@@ -42,8 +40,6 @@ private:
     void addRecentFile(const QString &filePath);
 
     KTextEditor::Document* codeDocument = nullptr;
-
-
     KTextEditor::View* codeView = nullptr;
     QTextBrowser* previewScene = nullptr;
     QSplitter* mainScene = nullptr;
@@ -56,6 +52,8 @@ private:
     KMessageWidget* errorMessage = nullptr;
 
     static constexpr int MaxRecentFiles = 10;
+
+
 
     QMenu* recentFilesMenu = nullptr;
 
@@ -73,6 +71,7 @@ private:
     QAction* syncScrollingAction = nullptr;
     bool isSyncingScroll = false;
 };
+
 
 
 
