@@ -23,3 +23,14 @@ install(TARGETS tilde DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES tilde.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
 install(FILES res/tilde.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
 
+set(CPACK_PACKAGE_NAME "Tilde")
+set(CPACK_PACKAGE_VENDOR "funnym0th")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A native C++ Markdown & LaTeX editor built on Qt 6 & KDE KatePart")
+set(CPACK_PACKAGE_VERSION_MAJOR "0")
+set(CPACK_PACKAGE_VERSION_MINOR "1")
+set(CPACK_PACKAGE_VERSION_PATCH "0")
+
+set(CPACK_GENERATOR "TGZ")
+
+include(CPack)
+
