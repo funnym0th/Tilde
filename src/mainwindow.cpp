@@ -2,7 +2,9 @@
 #include <ktexteditor/editor.h>
 #include <ktexteditor/view.h>
 #include <ktexteditor/document.h>
+#include <ktexteditor/cursor.h>
 #include <QSplitter>
+
 #include <QScreen>
 #include <QGuiApplication>
 #include <QMenuBar>
@@ -21,9 +23,11 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QTemporaryDir>
+#include <QScrollBar>
 #include <QTextBrowser>
 #include <QKeySequence>
 #include <QCloseEvent>
+
 
 #include <QMessageBox>
 
@@ -193,6 +197,12 @@ void MainWindow::setupMenuBar() {
     togglePreviewAction->setIcon(QIcon::fromTheme("view-preview"));
     togglePreviewAction->setShortcut(QKeySequence("Ctrl+P"));
 
+    syncScrollingAction = viewMenuBar->addAction("Synchronized Scrolling");
+    syncScrollingAction->setCheckable(true);
+    syncScrollingAction->setChecked(true);
+    syncScrollingAction->setIcon(QIcon::fromTheme("view-restore"));
+
+
     editMenuBar->addAction(codeView->actionCollection()->action("edit_undo"));
     editMenuBar->addAction(codeView->actionCollection()->action("edit_redo"));
     editMenuBar->addSeparator();
@@ -314,7 +324,68 @@ void MainWindow::setupConnections() {
     connect(codeDocument, &KTextEditor::Document::modifiedChanged, this, [this]() {
         updateWindowTitle();
     });
+
+    auto syncFromEditor = [this]() {
+        if (isSyncingScroll || !syncScrollingAction || !syncScrollingAction->isChecked()) return;
+
+        double ratio = 0.0;
+        QScrollBar* codeBar = codeView->verticalScrollBar();
+        if (codeBar && codeBar->maximum() > 0) {
+            ratio = static_cast<double>(codeBar->value()) / codeBar->maximum();
+        } else {
+            KTextEditor::Cursor maxPos = codeView->maxScrollPosition();
+            if (maxPos.line() > 0 && codeView->cursorPosition().line() >= 0) {
+                ratio = static_cast<double>(codeView->cursorPosition().line()) / maxPos.line();
+            }
+        }
+        if (ratio < 0.0) ratio = 0.0;
+        if (ratio > 1.0) ratio = 1.0;
+
+        isSyncingScroll = true;
+        if (isLatexMode() && pdfPreview && pdfPreview->verticalScrollBar()) {
+            QScrollBar* pdfBar = pdfPreview->verticalScrollBar();
+            if (pdfBar->maximum() > 0) {
+                pdfBar->setValue(qRound(ratio * pdfBar->maximum()));
+            }
+        } else if (!isLatexMode() && previewScene && previewScene->verticalScrollBar()) {
+            QScrollBar* sceneBar = previewScene->verticalScrollBar();
+            if (sceneBar->maximum() > 0) {
+                sceneBar->setValue(qRound(ratio * sceneBar->maximum()));
+            }
+        }
+        isSyncingScroll = false;
+    };
+
+    connect(codeView->verticalScrollBar(), &QScrollBar::valueChanged, this, [syncFromEditor](int) { syncFromEditor(); });
+    connect(codeView, &KTextEditor::View::verticalScrollPositionChanged, this, [syncFromEditor](KTextEditor::View*, const KTextEditor::Cursor&) { syncFromEditor(); });
+    connect(codeView, &KTextEditor::View::cursorPositionChanged, this, [syncFromEditor](KTextEditor::View*, const KTextEditor::Cursor&) { syncFromEditor(); });
+
+
+    connect(previewScene->verticalScrollBar(), &QScrollBar::valueChanged, this, [this](int value) {
+        if (isSyncingScroll || isLatexMode() || !syncScrollingAction || !syncScrollingAction->isChecked()) return;
+        QScrollBar* sceneBar = previewScene->verticalScrollBar();
+        QScrollBar* codeBar = codeView->verticalScrollBar();
+        if (!sceneBar || sceneBar->maximum() <= 0 || !codeBar || codeBar->maximum() <= 0) return;
+
+        double ratio = static_cast<double>(value) / sceneBar->maximum();
+        isSyncingScroll = true;
+        codeBar->setValue(qRound(ratio * codeBar->maximum()));
+        isSyncingScroll = false;
+    });
+
+    connect(pdfPreview->verticalScrollBar(), &QScrollBar::valueChanged, this, [this](int value) {
+        if (isSyncingScroll || !isLatexMode() || !syncScrollingAction || !syncScrollingAction->isChecked()) return;
+        QScrollBar* pdfBar = pdfPreview->verticalScrollBar();
+        QScrollBar* codeBar = codeView->verticalScrollBar();
+        if (!pdfBar || pdfBar->maximum() <= 0 || !codeBar || codeBar->maximum() <= 0) return;
+
+        double ratio = static_cast<double>(value) / pdfBar->maximum();
+        isSyncingScroll = true;
+        codeBar->setValue(qRound(ratio * codeBar->maximum()));
+        isSyncingScroll = false;
+    });
 }
+
 
 
 void MainWindow::setupContextMenus() {
