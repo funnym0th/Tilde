@@ -13,6 +13,8 @@ find_package(KF6TextEditor REQUIRED)
 qt_add_executable(tilde
     src/main.cpp
     src/mainwindow.cpp
+    src/aboutdialog.cpp
+    src/aboutdialog.hpp
 )
 
 
