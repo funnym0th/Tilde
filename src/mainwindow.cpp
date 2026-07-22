@@ -1,4 +1,5 @@
 #include "mainwindow.hpp"
+#include "aboutdialog.hpp"
 #include <ktexteditor/editor.h>
 
 
@@ -228,6 +229,7 @@ void MainWindow::setupMenuBar() {
     QMenu* fileMenuBar = menuBar()->addMenu("File");
     QMenu* editMenuBar = menuBar()->addMenu("Edit");
     QMenu* viewMenuBar = menuBar()->addMenu("View");
+    QMenu* helpMenuBar = menuBar()->addMenu("Help");
 
     newFileAction = fileMenuBar->addAction("New");
     newFileAction->setIcon(QIcon::fromTheme("document-new"));
@@ -257,6 +259,10 @@ void MainWindow::setupMenuBar() {
     saveAsFileAction = fileMenuBar->addAction("Save as...");
     saveAsFileAction->setIcon(QIcon::fromTheme("document-save-as"));
     saveAsFileAction->setShortcut(QKeySequence::SaveAs);
+
+    closeFileAction = fileMenuBar->addAction("Close File");
+    closeFileAction->setIcon(QIcon::fromTheme("window-close"));
+    closeFileAction->setShortcut(QKeySequence::Close);
 
     fileMenuBar->addSeparator();
 
@@ -304,6 +310,9 @@ void MainWindow::setupMenuBar() {
     viewMenuBar->addAction(codeView->actionCollection()->action("view_inc_font_sizes"));
     viewMenuBar->addAction(codeView->actionCollection()->action("view_dec_font_sizes"));
     viewMenuBar->addAction(codeView->actionCollection()->action("view_reset_font_sizes"));
+
+    aboutAction = helpMenuBar->addAction("About Tilde...");
+    aboutAction->setIcon(QIcon::fromTheme("help-about"));
 }
 
 void MainWindow::setupConnections() {
@@ -314,6 +323,12 @@ void MainWindow::setupConnections() {
         previewStack->setCurrentWidget(previewScene);
         updateWindowTitle();
         refreshPreview();
+    });
+
+    connect(closeFileAction, &QAction::triggered, this, [this]() {
+        if (codeDocument->closeUrl()) {
+            updateWindowTitle();
+        }
     });
 
     connect(quitFileAction, &QAction::triggered, this, [this]() { close(); });
@@ -542,6 +557,11 @@ void MainWindow::setupConnections() {
         isSyncingScroll = true;
         codeBar->setValue(qRound(ratio * codeBar->maximum()));
         isSyncingScroll = false;
+    });
+
+    connect(aboutAction, &QAction::triggered, this, [this]() {
+        AboutDialog aboutBox(this);
+        aboutBox.exec();
     });
 }
 

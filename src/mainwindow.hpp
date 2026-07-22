@@ -65,8 +65,10 @@ private:
     QAction* saveFileAction = nullptr;
     QAction* saveAsFileAction = nullptr;
     QAction* exportPdfAction = nullptr;
+    QAction* closeFileAction = nullptr;
     QAction* quitFileAction = nullptr;
     QAction* togglePreviewAction = nullptr;
+    QAction* aboutAction = nullptr;
 
     QAction* syncScrollingAction = nullptr;
     bool isSyncingScroll = false;
