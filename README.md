@@ -2,7 +2,6 @@
   <img src="res/tilde.svg" width="128" height="128" alt="Tilde Logo" />
   <h1>Tilde</h1>
   <p><b>A native C++ Markdown & LaTeX editor built on Qt 6 & KDE KatePart</b></p>
-  
   [![Qt 6](https://img.shields.io/badge/Qt-6.x-41CD52?style=flat-square&logo=qt&logoColor=white)](https://www.qt.io/)
   [![KDE KatePart](https://img.shields.io/badge/Engine-KDE_KatePart-1D99F3?style=flat-square&logo=kde&logoColor=white)](https://api.kde.org/frameworks/ktexteditor/html/)
   [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0)
@@ -14,7 +13,7 @@
 
 ## Why Tilde?
 
-Modern document editors are often bloated Electron applications consuming hundreds of megabytes of RAM just to render text by using Chromium or other web-based renders. **Tilde** is built natively in C++ with Qt 6 and the KDE KatePart (`KTextEditor`) engine used in KDevelop and Kate, giving you full IDE capabilities without skyrocketing your RAM and CPU usage.
+Modern document editors are often bloated Electron applications consuming hundreds of megabytes of RAM just to render text by using Chromium or other web-based renders. **Tilde** is built natively in C++ with Qt 6 and the KDE KatePart (`KTextEditor`) engine used in KDevelop and Kate, giving you full editing capabilities without skyrocketing your RAM and CPU usage.
 
 Whether you are drafting technical notes, repo README.md's in Markdown or writing complex scientific papers in LaTeX, Tilde provides a distraction-free editing experience with live visual previews and instant PDF compilation.
 
@@ -38,11 +37,11 @@ Whether you are drafting technical notes, repo README.md's in Markdown or writin
 ## Building & Installation
 
 ### Package Manager
-Currently the only package available is for distros using RPM package managers. They're available in the [Releases](https://github.com/funnym0th/Tilde/releases/latest) of the repository.
+Currently, only RPM and TAR.GZ packages are available. They're available in the [Releases](https://github.com/funnym0th/Tilde/releases/latest) of the repository. Support for other package formats is planned.
 
 ### Building from source 
 
-#### Prerequisites (`Linux / KDE Plasma`)
+#### Prerequisites (Linux / KDE Plasma)
 Make sure you have Qt 6 (including the PDF module), KTextEditor (`KF6`), and CMake installed alongside a C++17 compiler (`GCC/Clang`):
 
 ##### **Fedora**
