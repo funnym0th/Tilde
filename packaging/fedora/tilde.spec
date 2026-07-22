@@ -1,5 +1,5 @@
 Name:           tilde
-Version:        0.1.0
+Version:        0.1.1
 Release:        1%{?dist}
 Summary:        A native C++ Markdown and LaTeX editor built on Qt 6 and KDE KatePart
 License:        GPL-3.0-only
@@ -44,5 +44,10 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/tilde.desktop
 %{_datadir}/icons/hicolor/scalable/apps/tilde.svg
 
 %changelog
+* Tue Jul 22 2026 funnym0th <funnym0th@users.noreply.github.com> - 0.1.1-1
+- Add help menu with about dialog
+- Add close file action to file menu
+- Update README
+
 * Tue Jul 21 2026 funnym0th <funnym0th@users.noreply.github.com> - 0.1.0-1
 - Initial release v0.1.0

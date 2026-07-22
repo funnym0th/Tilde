@@ -38,9 +38,11 @@ jobs:
 
       - name: Generate native Fedora RPM package with rpmbuild
         run: |
+          VERSION=${GITHUB_REF_NAME#v}
           mkdir -p build/rpmbuild/{SOURCES,SPECS,RPMS,BUILD}
-          tar --transform='s,^./,tilde-0.1.0/,' --exclude=build --exclude=.git -czf build/rpmbuild/SOURCES/tilde-0.1.0.tar.gz .
+          tar --transform="s,^./,tilde-${VERSION}/," --exclude=build --exclude=.git -czf "build/rpmbuild/SOURCES/tilde-${VERSION}.tar.gz" .
           cp packaging/fedora/tilde.spec build/rpmbuild/SPECS/
+          sed -i "s/^Version:.*/Version:        ${VERSION}/" build/rpmbuild/SPECS/tilde.spec
           rpmbuild --define "_topdir $(pwd)/build/rpmbuild" -bb build/rpmbuild/SPECS/tilde.spec
 
       - name: Upload Release Assets to GitHub

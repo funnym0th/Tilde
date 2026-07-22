@@ -1,4 +1,5 @@
 #include "aboutdialog.hpp"
+#include "version.hpp"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -26,7 +27,7 @@ AboutDialog::AboutDialog(QWidget* parent) : QDialog(parent) {
     titleFont.setPointSize(16);
     titleLabel->setFont(titleFont);
 
-    QLabel* versionLabel = new QLabel("Version 0.1.0", this);
+    QLabel* versionLabel = new QLabel(QString("Version %1").arg(TILDE_VERSION), this);
     titleLayout->addWidget(titleLabel);
     titleLayout->addWidget(versionLabel);
 
